@@ -90,10 +90,43 @@
                 <button id="close-modal" class="btn btn-ghost"><i data-feather="x"></i></button>
             </div>
             <div class="modal-body">
-                <textarea id="post-content" class="input-field" rows="5" placeholder="What's on your mind?"></textarea>
-                <div class="flex justify-between items-center" style="margin-top: 1rem;">
-                    <button class="btn btn-ghost"><i data-feather="image"></i> Add Media</button>
-                    <button id="post-submit-btn" class="btn btn-primary">Post Now</button>
+                <!-- 1. Platform Selection -->
+                <div class="form-group mb-4">
+                    <label class="block text-sm font-medium mb-1">Select Platforms</label>
+                    <div id="platform-checklist" class="flex flex-wrap gap-2 text-sm">
+                        <!-- Dynamic Checkboxes injected by JS -->
+                        <span class="text-muted text-xs">Loading accounts...</span>
+                    </div>
+                </div>
+
+                <!-- 2. Content Fields -->
+                <div class="form-group mb-3">
+                    <input type="text" id="post-title" class="input-field mb-2" placeholder="Post Title (Internal use)">
+                    <textarea id="post-content" class="input-field" rows="4" placeholder="Description / Caption..."></textarea>
+                </div>
+
+                <!-- 3. Meta & Media -->
+                <div class="flex gap-2 mb-4">
+                    <input type="text" id="post-hashtags" class="input-field" placeholder="#hashtags" style="flex:1">
+                    <button class="btn btn-ghost" onclick="document.getElementById('media-upload').click()">
+                        <i data-feather="image"></i> Media
+                    </button>
+                    <input type="file" id="media-upload" hidden multiple accept="image/*,video/*">
+                </div>
+                <div id="media-preview" class="flex gap-2 mb-4 overflow-x-auto"></div>
+
+                <!-- 4. Schedule Option -->
+                 <div class="form-group mb-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <input type="checkbox" id="schedule-toggle">
+                        <label for="schedule-toggle" class="cursor-pointer">Schedule for later</label>
+                    </div>
+                    <input type="datetime-local" id="schedule-datetime" class="input-field hidden">
+                </div>
+
+                <!-- 5. Actions -->
+                <div class="flex justify-end gap-2" style="margin-top: 1rem; border-top: 1px solid var(--border); padding-top: 1rem;">
+                    <button id="post-now-btn" class="btn btn-primary">Post Now</button>
                 </div>
             </div>
         </div>

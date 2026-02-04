@@ -28,61 +28,139 @@ logoutBtn.addEventListener('click', async () => {
 });
 
 // 3. Modal & Posting Logic
+// 3. Modal & Posting Logic
+const postTitleEl = document.getElementById('post-title');
 const postContentEl = document.getElementById('post-content');
-const postSubmitBtn = document.getElementById('post-submit-btn');
+const postHashtagsEl = document.getElementById('post-hashtags'); // Optional
+const postSubmitBtn = document.getElementById('post-now-btn');
+const platformChecklist = document.getElementById('platform-checklist');
+const scheduleToggle = document.getElementById('schedule-toggle');
+const scheduleDateEl = document.getElementById('schedule-datetime');
 
-composeBtn.addEventListener('click', () => {
+// Open Modal & Load Accounts
+composeBtn.addEventListener('click', async () => {
     composeModal.classList.remove('hidden');
-});
-closeModal.addEventListener('click', () => {
-    composeModal.classList.add('hidden');
-});
-window.addEventListener('click', (e) => {
-    if (e.target === composeModal) composeModal.classList.add('hidden');
-});
-
-// HANDLE POST SUBMISSION
-postSubmitBtn.addEventListener('click', async () => {
-    const content = postContentEl.value;
-    if(!content) return alert("Please write something!");
-
-    postSubmitBtn.innerText = "Posting...";
     
-    // 1. Get Connected Account (Facebook)
-    const { data: accounts, error } = await supabaseClient
-        .from('social_accounts')
-        .select('*')
-        .eq('platform', 'facebook')
-        .limit(1);
-
+    // Load Platforms
+    platformChecklist.innerHTML = '<span class="text-muted text-xs">Loading...</span>';
+    const { data: accounts } = await supabaseClient.from('social_accounts').select('*');
+    
     if(!accounts || accounts.length === 0) {
-        alert("No connected Facebook page found! Go to Accounts tab to connect.");
-        postSubmitBtn.innerText = "Post Now";
+        platformChecklist.innerHTML = '<span class="text-danger text-xs">No accounts connected. Go to Accounts tab.</span>';
         return;
     }
 
-    const page = accounts[0];
+    platformChecklist.innerHTML = '';
+    accounts.forEach(acc => {
+        const id = `chk-${acc.id}`;
+        const html = `
+            <div class="flex items-center gap-1 bg-white p-1 rounded border">
+                <input type="checkbox" id="${id}" value="${acc.id}" checked class="platform-checkbox">
+                <label for="${id}" class="cursor-pointer select-none">
+                    <i data-feather="${acc.platform}" style="width:12px; height:12px"></i> ${acc.account_name}
+                </label>
+            </div>
+        `;
+        platformChecklist.insertAdjacentHTML('beforeend', html);
+    });
+    feather.replace();
+});
 
-    // 2. Post to Facebook (Client-Side for MVP)
-    // Note: In a real app, do this via Edge Function for security (CORS/Tokens)
-    // But for this demo, we use the token we saved.
+// Close Logic
+closeModal.addEventListener('click', () => composeModal.classList.add('hidden'));
+window.addEventListener('click', (e) => { if (e.target === composeModal) composeModal.classList.add('hidden'); });
+
+// Schedule Toggle
+scheduleToggle.addEventListener('change', (e) => {
+    if(e.target.checked) {
+        scheduleDateEl.classList.remove('hidden');
+        postSubmitBtn.innerText = "Schedule Post";
+    } else {
+        scheduleDateEl.classList.add('hidden');
+        postSubmitBtn.innerText = "Post Now";
+    }
+});
+
+// HANDLE SUBMISSION
+postSubmitBtn.addEventListener('click', async () => {
+    // 1. Gather Data
+    const title = postTitleEl.value;
+    const content = postContentEl.value;
+    const hashtags = postHashtagsEl.value;
+    const isScheduled = scheduleToggle.checked;
     
-    FB.api(
-        `/${page.platform_account_id}/feed`,
-        'POST',
-        { message: content, access_token: page.access_token },
-        function(response) {
-            postSubmitBtn.innerText = "Post Now";
-            
-            if (!response || response.error) {
-                alert('Error posting: ' + (response ? response.error.message : 'Unknown error'));
-            } else {
-                alert('Post Published Successfully! ID: ' + response.id);
-                postContentEl.value = ''; // Clear
-                composeModal.classList.add('hidden'); // Close
-            }
+    const fullMessage = `${content}\n\n${hashtags}`;
+
+    if(!content) return alert("Please write a description/caption!");
+
+    // 2. Get Selected Platforms
+    const checkboxes = document.querySelectorAll('.platform-checkbox:checked');
+    if(checkboxes.length === 0) return alert("Select at least one platform to post to.");
+
+    const selectedIds = Array.from(checkboxes).map(cb => cb.value);
+
+    // Fetch account details for selected IDs
+    const { data: accounts } = await supabaseClient
+        .from('social_accounts')
+        .select('*')
+        .in('id', selectedIds);
+
+    postSubmitBtn.innerText = isScheduled ? "Scheduling..." : "Posting...";
+
+    // 3. IF SCHEDULED -> Save to DB only
+    if(isScheduled) {
+        const dateVal = scheduleDateEl.value;
+        if(!dateVal) return alert("Please pick a date and time!");
+        
+        const { error } = await supabaseClient.from('posts').insert({
+            user_id: (await supabaseClient.auth.getUser()).data.user.id,
+            content: fullMessage,
+            scheduled_time: new Date(dateVal).toISOString(),
+            status: 'scheduled'
+        });
+
+        if(error) alert("Error scheduling: " + error.message);
+        else {
+            alert("Post Scheduled Successfully!");
+            composeModal.classList.add('hidden');
         }
-    );
+        postSubmitBtn.innerText = "Schedule Post";
+        return;
+    }
+
+    // 4. IF POST NOW -> Loop and Post
+    let successCount = 0;
+    
+    for (const page of accounts) {
+        if(page.platform === 'facebook') {
+            await new Promise((resolve) => {
+                FB.api(
+                    `/${page.platform_account_id}/feed`,
+                    'POST',
+                    { message: fullMessage, access_token: page.access_token },
+                    function(response) {
+                        if (response && !response.error) {
+                            successCount++;
+                            console.log("Posted to FB:", response.id);
+                        } else {
+                            console.error("FB Error:", response ? response.error : 'Unknown');
+                            alert(`Failed to post to ${page.account_name}: ` + (response ? response.error.message : 'Unknown'));
+                        }
+                        resolve();
+                    }
+                );
+            });
+        }
+        // Add other platforms here in future
+    }
+
+    postSubmitBtn.innerText = "Post Now";
+    if(successCount > 0) {
+        alert(`Successfully posted to ${successCount} account(s)!`);
+        postContentEl.value = ''; 
+        composeModal.classList.add('hidden');
+        // Refresh feed if we implemented it
+    }
 });
 
 
