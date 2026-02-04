@@ -399,9 +399,17 @@ function connectFacebook() {
 
                 // 2. Check for Data
                 if(pageResponse.data && pageResponse.data.length > 0) {
-                    // Save first page found (MVP)
-                    const page = pageResponse.data[0]; 
-                    saveAccountToSupabase('facebook', page.id, page.name, page.access_token);
+                    // Save ALL pages found in the response
+                    let addedCount = 0;
+                    const promises = pageResponse.data.map(page => 
+                        saveAccountToSupabase('facebook', page.id, page.name, page.access_token)
+                    );
+                    
+                    Promise.all(promises).then(() => {
+                         alert("Successfully connected/updated your pages!");
+                         loadPage('accounts');
+                    });
+
                 } else {
                     alert("No Facebook Pages found. \n\n1. Do you have a Page? \n2. Did you select it in the popup? \n3. Did you add 'pages_show_list' to the App Dashboard?");
                 }
@@ -412,26 +420,43 @@ function connectFacebook() {
     }, {scope: 'pages_show_list,pages_read_engagement,pages_manage_posts'});
 }
 
-// 4. Save to Supabase
+// 4. Save to Supabase (Upsert Logic)
 async function saveAccountToSupabase(platform, accountId, name, token) {
     const { data: { user } } = await supabaseClient.auth.getUser();
     
-    const { error } = await supabaseClient
+    // Check if exists
+    const { data: existing } = await supabaseClient
         .from('social_accounts')
-        .insert({
-            user_id: user.id,
-            platform: platform,
-            platform_account_id: accountId,
-            account_name: name,
-            access_token: token // Note: In production, encrypt this before sending!
-        });
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('platform', platform)
+        .eq('platform_account_id', accountId)
+        .maybeSingle();
 
-    if(error) {
-        console.error('Error saving account:', error);
-        alert("Error connecting account: " + error.message);
+    if (existing) {
+        // Update Token if needed
+        const { error } = await supabaseClient
+            .from('social_accounts')
+            .update({ 
+                access_token: token,
+                account_name: name 
+            })
+            .eq('id', existing.id);
+            
+        if(error) console.error("Error updating:", error);
     } else {
-        alert("Successfully connected: " + name);
-        loadPage('accounts'); // Refresh UI to show connected state (logic to be added)
+        // Insert New
+        const { error } = await supabaseClient
+            .from('social_accounts')
+            .insert({
+                user_id: user.id,
+                platform: platform,
+                platform_account_id: accountId,
+                account_name: name,
+                access_token: token
+            });
+
+        if(error) console.error("Error inserting:", error);
     }
 }
 
