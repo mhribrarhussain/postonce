@@ -148,6 +148,7 @@ function loadPage(page) {
             </div>
         `;
         feather.replace();
+        setTimeout(attachConnectListeners, 500);
     } 
     else if (page === 'settings') {
         pageHeader.innerText = 'Settings';
@@ -168,5 +169,91 @@ function loadPage(page) {
                 <button class="btn btn-primary">Save Changes</button>
             </div>
         `;
+    }
+}
+
+// ==========================================
+// FACEBOOK INTEGRATION
+// ==========================================
+const FB_APP_ID = 'YOUR_APP_ID_HERE'; // <--- REPLACE THIS 
+
+// 1. Initialize SDK
+window.fbAsyncInit = function() {
+    FB.init({
+      appId      : FB_APP_ID,
+      cookie     : true,
+      xfbml      : true,
+      version    : 'v18.0'
+    });
+};
+
+// 2. Load SDK asynchronously
+(function(d, s, id){
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) {return;}
+    js = d.createElement(s); js.id = id;
+    js.src = "https://connect.facebook.net/en_US/sdk.js";
+    fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));
+
+// 3. Connect Logic
+function connectFacebook() {
+    if(FB_APP_ID === 'YOUR_APP_ID_HERE') {
+        alert("Please set your Facebook App ID in js/app.js");
+        return;
+    }
+
+    FB.login(function(response) {
+        if (response.authResponse) {
+            console.log('Welcome! Fetching your information.... ');
+            // Now get the Pages
+            FB.api('/me/accounts', function(pageResponse) {
+                if(pageResponse.data && pageResponse.data.length > 0) {
+                    // Save first page found (MVP)
+                    const page = pageResponse.data[0]; 
+                    saveAccountToSupabase('facebook', page.id, page.name, page.access_token);
+                } else {
+                    alert("No Facebook Pages found for this user.");
+                }
+            });
+        } else {
+            console.log('User cancelled login or did not fully authorize.');
+        }
+    }, {scope: 'pages_show_list,pages_read_engagement,pages_manage_posts'});
+}
+
+// 4. Save to Supabase
+async function saveAccountToSupabase(platform, accountId, name, token) {
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    
+    const { error } = await supabaseClient
+        .from('social_accounts')
+        .insert({
+            user_id: user.id,
+            platform: platform,
+            platform_account_id: accountId,
+            account_name: name,
+            access_token: token // Note: In production, encrypt this before sending!
+        });
+
+    if(error) {
+        console.error('Error saving account:', error);
+        alert("Error connecting account: " + error.message);
+    } else {
+        alert("Successfully connected: " + name);
+        loadPage('accounts'); // Refresh UI to show connected state (logic to be added)
+    }
+}
+
+// 5. Attach Listener
+function attachConnectListeners() {
+    // Find the Facebook "Connect" button
+    // It's in the first .account-card
+    const fbCard = document.querySelector('.account-card'); 
+    if(fbCard) {
+        const btn = fbCard.querySelector('.btn-primary');
+        if(btn) {
+            btn.onclick = connectFacebook; // direct attach
+        }
     }
 }
