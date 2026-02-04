@@ -51,17 +51,28 @@ composeBtn.addEventListener('click', async () => { /* ... existing fetch logic .
     platformChecklist.innerHTML = '';
     accounts.forEach(acc => {
         const id = `chk-${acc.id}`;
-        // Compact Icon Design
+        // Platform Pill Design (like reference image)
+        const platformClass = acc.platform.toLowerCase();
         const html = `
-            <div class="relative" title="${acc.platform} - ${acc.account_name}">
-                <input type="checkbox" id="${id}" value="${acc.id}" checked class="platform-checkbox">
-                <label for="${id}" class="platform-select-label">
-                    <i data-feather="${acc.platform}" style="width:24px; height:24px;"></i>
-                </label>
-            </div>
+            <label class="platform-pill ${platformClass} active" data-id="${acc.id}">
+                <input type="checkbox" value="${acc.id}" checked class="platform-checkbox" style="display:none;">
+                <i data-feather="${acc.platform}" style="width:16px; height:16px;"></i>
+                <span>${acc.account_name}</span>
+            </label>
         `;
         platformChecklist.insertAdjacentHTML('beforeend', html);
     });
+    
+    // Add click toggle for pills
+    document.querySelectorAll('.platform-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+            const checkbox = pill.querySelector('input');
+            checkbox.checked = !checkbox.checked;
+            pill.classList.toggle('active', checkbox.checked);
+            pill.classList.toggle('inactive', !checkbox.checked);
+        });
+    });
+    
     feather.replace();
 });
 
