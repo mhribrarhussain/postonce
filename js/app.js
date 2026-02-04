@@ -28,138 +28,174 @@ logoutBtn.addEventListener('click', async () => {
 });
 
 // 3. Modal & Posting Logic
-// 3. Modal & Posting Logic
+// 3. Modal & Media Logic
 const postTitleEl = document.getElementById('post-title');
 const postContentEl = document.getElementById('post-content');
-const postHashtagsEl = document.getElementById('post-hashtags'); // Optional
+const postHashtagsEl = document.getElementById('post-hashtags'); 
 const postSubmitBtn = document.getElementById('post-now-btn');
 const platformChecklist = document.getElementById('platform-checklist');
 const scheduleToggle = document.getElementById('schedule-toggle');
 const scheduleDateEl = document.getElementById('schedule-datetime');
+const mediaInput = document.getElementById('media-upload');
+const mediaPreview = document.getElementById('media-preview');
 
 // Open Modal & Load Accounts
-composeBtn.addEventListener('click', async () => {
+composeBtn.addEventListener('click', async () => { /* ... existing fetch logic ... */ 
     composeModal.classList.remove('hidden');
-    
-    // Load Platforms
     platformChecklist.innerHTML = '<span class="text-muted text-xs">Loading...</span>';
     const { data: accounts } = await supabaseClient.from('social_accounts').select('*');
-    
     if(!accounts || accounts.length === 0) {
-        platformChecklist.innerHTML = '<span class="text-danger text-xs">No accounts connected. Go to Accounts tab.</span>';
+        platformChecklist.innerHTML = '<span class="text-danger text-xs">No accounts connected.</span>';
         return;
     }
-
     platformChecklist.innerHTML = '';
     accounts.forEach(acc => {
         const id = `chk-${acc.id}`;
-        const html = `
+        platformChecklist.insertAdjacentHTML('beforeend', `
             <div class="flex items-center gap-1 bg-white p-1 rounded border">
                 <input type="checkbox" id="${id}" value="${acc.id}" checked class="platform-checkbox">
                 <label for="${id}" class="cursor-pointer select-none">
                     <i data-feather="${acc.platform}" style="width:12px; height:12px"></i> ${acc.account_name}
                 </label>
-            </div>
-        `;
-        platformChecklist.insertAdjacentHTML('beforeend', html);
+            </div>`);
     });
     feather.replace();
 });
 
-// Close Logic
+// Close
 closeModal.addEventListener('click', () => composeModal.classList.add('hidden'));
 window.addEventListener('click', (e) => { if (e.target === composeModal) composeModal.classList.add('hidden'); });
 
-// Schedule Toggle
-scheduleToggle.addEventListener('change', (e) => {
-    if(e.target.checked) {
-        scheduleDateEl.classList.remove('hidden');
-        postSubmitBtn.innerText = "Schedule Post";
-    } else {
-        scheduleDateEl.classList.add('hidden');
-        postSubmitBtn.innerText = "Post Now";
-    }
+// Media Preview
+mediaInput.addEventListener('change', (e) => {
+    mediaPreview.innerHTML = '';
+    const files = Array.from(e.target.files);
+    files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const isVideo = file.type.startsWith('video');
+            const mediaHtml = isVideo 
+                ? `<video src="${ev.target.result}" style="height:60px; border-radius:4px;"></video>`
+                : `<img src="${ev.target.result}" style="height:60px; border-radius:4px;">`;
+            mediaPreview.insertAdjacentHTML('beforeend', mediaHtml);
+        };
+        reader.readAsDataURL(file);
+    });
 });
+
+// Helper: Upload to Supabase Storage
+async function uploadToStorage(file) {
+    const fileName = `${Date.now()}_${file.name}`;
+    const { data, error } = await supabaseClient.storage
+        .from('post_media')
+        .upload(fileName, file);
+
+    if (error) throw error;
+    
+    // Get Public URL
+    const { data: { publicUrl } } = supabaseClient.storage
+        .from('post_media')
+        .getPublicUrl(fileName);
+        
+    return publicUrl;
+}
 
 // HANDLE SUBMISSION
 postSubmitBtn.addEventListener('click', async () => {
-    // 1. Gather Data
     const title = postTitleEl.value;
     const content = postContentEl.value;
     const hashtags = postHashtagsEl.value;
     const isScheduled = scheduleToggle.checked;
-    
+    const files = mediaInput.files;
     const fullMessage = `${content}\n\n${hashtags}`;
 
-    if(!content) return alert("Please write a description/caption!");
+    if(!content && files.length === 0) return alert("Write something or add media!");
 
-    // 2. Get Selected Platforms
     const checkboxes = document.querySelectorAll('.platform-checkbox:checked');
-    if(checkboxes.length === 0) return alert("Select at least one platform to post to.");
-
+    if(checkboxes.length === 0) return alert("Select at least one platform.");
     const selectedIds = Array.from(checkboxes).map(cb => cb.value);
 
-    // Fetch account details for selected IDs
-    const { data: accounts } = await supabaseClient
-        .from('social_accounts')
-        .select('*')
-        .in('id', selectedIds);
+    postSubmitBtn.innerText = "Processing...";
 
-    postSubmitBtn.innerText = isScheduled ? "Scheduling..." : "Posting...";
-
-    // 3. IF SCHEDULED -> Save to DB only
-    if(isScheduled) {
-        const dateVal = scheduleDateEl.value;
-        if(!dateVal) return alert("Please pick a date and time!");
-        
-        const { error } = await supabaseClient.from('posts').insert({
-            user_id: (await supabaseClient.auth.getUser()).data.user.id,
-            content: fullMessage,
-            scheduled_time: new Date(dateVal).toISOString(),
-            status: 'scheduled'
-        });
-
-        if(error) alert("Error scheduling: " + error.message);
-        else {
-            alert("Post Scheduled Successfully!");
-            composeModal.classList.add('hidden');
+    try {
+        // 1. Upload Media if present
+        let mediaUrls = [];
+        if (files.length > 0) {
+            postSubmitBtn.innerText = "Uploading Media...";
+            for (const file of files) {
+                const url = await uploadToStorage(file);
+                mediaUrls.push(url);
+            }
         }
-        postSubmitBtn.innerText = "Schedule Post";
-        return;
-    }
 
-    // 4. IF POST NOW -> Loop and Post
-    let successCount = 0;
-    
-    for (const page of accounts) {
-        if(page.platform === 'facebook') {
-            await new Promise((resolve) => {
-                FB.api(
-                    `/${page.platform_account_id}/feed`,
-                    'POST',
-                    { message: fullMessage, access_token: page.access_token },
-                    function(response) {
-                        if (response && !response.error) {
-                            successCount++;
-                            console.log("Posted to FB:", response.id);
+        // 2. Fetch Accounts
+        const { data: accounts } = await supabaseClient
+            .from('social_accounts')
+            .select('*')
+            .in('id', selectedIds);
+
+        // 3. IF SCHEDULED -> Save DB
+        if(isScheduled) {
+            const dateVal = scheduleDateEl.value;
+            if(!dateVal) throw new Error("Pick a date!");
+            
+            await supabaseClient.from('posts').insert({
+                user_id: (await supabaseClient.auth.getUser()).data.user.id,
+                content: fullMessage,
+                media_urls: mediaUrls,
+                scheduled_time: new Date(dateVal).toISOString(),
+                status: 'scheduled'
+            });
+            alert("Scheduled successfully!");
+            composeModal.classList.add('hidden');
+            postSubmitBtn.innerText = "Schedule Post";
+            return;
+        }
+
+        // 4. POST NOW -> Loop
+        postSubmitBtn.innerText = "Posting...";
+        let successCount = 0;
+        
+        for (const page of accounts) {
+            if(page.platform === 'facebook') {
+                await new Promise((resolve) => {
+                    const endpoint = mediaUrls.length > 0 ? `/${page.platform_account_id}/photos` : `/${page.platform_account_id}/feed`;
+                    const payload = { access_token: page.access_token };
+                    
+                    if(mediaUrls.length > 0) {
+                        payload.url = mediaUrls[0]; // FB Graph API handles 1 photo simply this way
+                        payload.caption = fullMessage;
+                    } else {
+                        payload.message = fullMessage;
+                    }
+
+                    FB.api(endpoint, 'POST', payload, function(resp) {
+                        if (resp && !resp.error) {
+                            successCount++; 
+                            console.log("Success FB:", resp);
                         } else {
-                            console.error("FB Error:", response ? response.error : 'Unknown');
-                            alert(`Failed to post to ${page.account_name}: ` + (response ? response.error.message : 'Unknown'));
+                            console.error("FB Error:", resp);
+                            alert(`Error on ${page.account_name}: ` + (resp ? resp.error.message : 'Unknown'));
                         }
                         resolve();
-                    }
-                );
-            });
+                    });
+                });
+            }
         }
-        // Add other platforms here in future
-    }
 
-    postSubmitBtn.innerText = "Post Now";
-    if(successCount > 0) {
-        alert(`Successfully posted to ${successCount} account(s)!`);
-        postContentEl.value = ''; 
-        composeModal.classList.add('hidden');
-        // Refresh feed if we implemented it
+        if(successCount > 0) {
+            alert(`Posted to ${successCount} accounts!`);
+            composeModal.classList.add('hidden');
+            // Reset
+            postContentEl.value = '';
+            mediaPreview.innerHTML = '';
+            mediaInput.value = '';
+        }
+
+    } catch (err) {
+        alert("Error: " + err.message);
+    } finally {
+        postSubmitBtn.innerText = isScheduled ? "Schedule Post" : "Post Now";
     }
 });
 
