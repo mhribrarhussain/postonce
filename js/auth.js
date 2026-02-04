@@ -13,7 +13,7 @@ let isLoginMode = true;
 
 // CHECK SESSION
 async function checkSession() {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await supabaseClient.auth.getSession();
     if (session) {
         window.location.href = 'dashboard.html';
     }
@@ -56,14 +56,14 @@ if (authForm) {
 
         try {
             if (isLoginMode) {
-                const { data, error } = await supabase.auth.signInWithPassword({
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
                     email,
                     password
                 });
                 if (error) throw error;
                 window.location.href = 'dashboard.html';
             } else {
-                const { data, error } = await supabase.auth.signUp({
+                const { data, error } = await supabaseClient.auth.signUp({
                     email,
                     password
                 });

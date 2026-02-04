@@ -11,7 +11,7 @@ const contentArea = document.getElementById('content-area');
 
 // 1. Check Auth
 async function init() {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await supabaseClient.auth.getSession();
     if (!session) {
         window.location.href = 'index.html';
         return;
@@ -23,7 +23,7 @@ init();
 
 // 2. Logout
 logoutBtn.addEventListener('click', async () => {
-    await supabase.auth.signOut();
+    await supabaseClient.auth.signOut();
     window.location.href = 'index.html';
 });
 
