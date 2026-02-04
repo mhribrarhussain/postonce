@@ -27,7 +27,10 @@ logoutBtn.addEventListener('click', async () => {
     window.location.href = 'index.html';
 });
 
-// 3. Modal
+// 3. Modal & Posting Logic
+const postContentEl = document.getElementById('post-content');
+const postSubmitBtn = document.getElementById('post-submit-btn');
+
 composeBtn.addEventListener('click', () => {
     composeModal.classList.remove('hidden');
 });
@@ -37,6 +40,51 @@ closeModal.addEventListener('click', () => {
 window.addEventListener('click', (e) => {
     if (e.target === composeModal) composeModal.classList.add('hidden');
 });
+
+// HANDLE POST SUBMISSION
+postSubmitBtn.addEventListener('click', async () => {
+    const content = postContentEl.value;
+    if(!content) return alert("Please write something!");
+
+    postSubmitBtn.innerText = "Posting...";
+    
+    // 1. Get Connected Account (Facebook)
+    const { data: accounts, error } = await supabaseClient
+        .from('social_accounts')
+        .select('*')
+        .eq('platform', 'facebook')
+        .limit(1);
+
+    if(!accounts || accounts.length === 0) {
+        alert("No connected Facebook page found! Go to Accounts tab to connect.");
+        postSubmitBtn.innerText = "Post Now";
+        return;
+    }
+
+    const page = accounts[0];
+
+    // 2. Post to Facebook (Client-Side for MVP)
+    // Note: In a real app, do this via Edge Function for security (CORS/Tokens)
+    // But for this demo, we use the token we saved.
+    
+    FB.api(
+        `/${page.platform_account_id}/feed`,
+        'POST',
+        { message: content, access_token: page.access_token },
+        function(response) {
+            postSubmitBtn.innerText = "Post Now";
+            
+            if (!response || response.error) {
+                alert('Error posting: ' + (response ? response.error.message : 'Unknown error'));
+            } else {
+                alert('Post Published Successfully! ID: ' + response.id);
+                postContentEl.value = ''; // Clear
+                composeModal.classList.add('hidden'); // Close
+            }
+        }
+    );
+});
+
 
 // 4. Navigation (Simple SPA feel)
 navItems.forEach(item => {
