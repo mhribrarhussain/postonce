@@ -20,61 +20,63 @@ async function checkSession() {
 }
 checkSession();
 
-// TOGGLE MODE (Login <-> Signup)
-toggleBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    isLoginMode = !isLoginMode;
-    
-    if (isLoginMode) {
-        pageTitle.innerText = "Welcome Back";
-        submitBtn.innerText = "Sign In";
-        toggleText.innerText = "Don't have an account?";
-        toggleBtn.innerText = "Sign Up";
-    } else {
-        pageTitle.innerText = "Create Account";
-        submitBtn.innerText = "Get Started";
-        toggleText.innerText = "Already have an account?";
-        toggleBtn.innerText = "Sign In";
-    }
-    errorMsg.style.display = 'none';
-    successMsg.style.display = 'none';
-});
-
-// SUBMIT FORM
-authForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = emailInput.value;
-    const password = passwordInput.value;
-
-    errorMsg.style.display = 'none';
-    successMsg.style.display = 'none';
-    submitBtn.disabled = true;
-    submitBtn.innerText = "Processing...";
-
-    try {
+if (toggleBtn) {
+    // TOGGLE MODE (Login <-> Signup)
+    toggleBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        isLoginMode = !isLoginMode;
+        
         if (isLoginMode) {
-            // LOGIN
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email,
-                password
-            });
-            if (error) throw error;
-            window.location.href = 'dashboard.html'; // Redirect
+            pageTitle.innerText = "Welcome Back";
+            submitBtn.innerText = "Sign In";
+            toggleText.innerText = "Don't have an account?";
+            toggleBtn.innerText = "Sign Up";
         } else {
-            // SIGNUP
-            const { data, error } = await supabase.auth.signUp({
-                email,
-                password
-            });
-            if (error) throw error;
-            successMsg.innerText = "Account created! Check your email to confirm.";
-            successMsg.style.display = 'block';
+            pageTitle.innerText = "Create Account";
+            submitBtn.innerText = "Get Started";
+            toggleText.innerText = "Already have an account?";
+            toggleBtn.innerText = "Sign In";
         }
-    } catch (error) {
-        errorMsg.innerText = error.message;
-        errorMsg.style.display = 'block';
-    } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerText = isLoginMode ? "Sign In" : "Get Started";
-    }
-});
+        errorMsg.style.display = 'none';
+        successMsg.style.display = 'none';
+    });
+}
+
+if (authForm) {
+    // SUBMIT FORM
+    authForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = emailInput.value;
+        const password = passwordInput.value;
+
+        errorMsg.style.display = 'none';
+        successMsg.style.display = 'none';
+        submitBtn.disabled = true;
+        submitBtn.innerText = "Processing...";
+
+        try {
+            if (isLoginMode) {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email,
+                    password
+                });
+                if (error) throw error;
+                window.location.href = 'dashboard.html';
+            } else {
+                const { data, error } = await supabase.auth.signUp({
+                    email,
+                    password
+                });
+                if (error) throw error;
+                successMsg.innerText = "Account created! Check your email to confirm.";
+                successMsg.style.display = 'block';
+            }
+        } catch (error) {
+            errorMsg.innerText = error.message;
+            errorMsg.style.display = 'block';
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerText = isLoginMode ? "Sign In" : "Get Started";
+        }
+    });
+}

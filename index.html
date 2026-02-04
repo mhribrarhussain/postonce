@@ -3,64 +3,175 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PostOnce - Social Media Scheduler</title>
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Styles -->
+    <title>PostOnce - Social Media Scheduling Tool</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
-    <!-- Supabase SDK (CDN) -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* Landing Page Specific Overrides */
+        body { background: var(--background); }
+        
+        /* Navbar */
+        .navbar {
+            padding: 1.5rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        /* Hero */
+        .hero {
+            padding: 6rem 0;
+            text-align: center;
+        }
+        
+        .hero h1 {
+            font-size: 3.5rem;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(to right, #fff 20%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto 2.5rem;
+        }
+        
+        /* Features */
+        .features {
+            padding: 5rem 0;
+            background: var(--surface);
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+            margin-top: 3rem;
+        }
+        
+        .feature-item {
+            padding: 2rem;
+            background: rgba(255,255,255,0.03);
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: 0.3s;
+        }
+        
+        .feature-item:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+        }
+        
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            display: inline-block;
+            padding: 12px;
+            background: rgba(79, 70, 229, 0.1);
+            border-radius: 12px;
+            color: var(--primary);
+        }
+
+        /* CTA Section */
+        .cta-section {
+            padding: 6rem 0;
+            text-align: center;
+            background: radial-gradient(circle at center, #1e1b4b 0%, var(--background) 100%);
+        }
+    </style>
+     <!-- Icons -->
+     <script src="https://unpkg.com/feather-icons"></script>
 </head>
 <body>
 
-    <!-- Landing / Auth Wrapper -->
-    <div class="auth-wrapper">
-        <div class="auth-box glass-card text-center animate-fade-in">
-            <!-- Logo area -->
-            <div class="flex justify-center items-center gap-2" style="margin-bottom: 2rem;">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-                </svg>
-                <h1 class="text-xl">PostOnce</h1>
+    <!-- NAV -->
+    <nav class="navbar">
+        <div class="container flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                 <div style="width:24px; height:24px; background:var(--primary); border-radius:4px;"></div>
+                 <span class="text-xl">PostOnce</span>
             </div>
-
-            <!-- Dynamic Header -->
-            <h2 id="page-title" class="text-2xl text-gradient" style="margin-bottom: 0.5rem;">Welcome Back</h2>
-            <p id="page-subtitle" class="text-muted" style="margin-bottom: 2rem;">Manage all your social posts in one place.</p>
-
-            <!-- Auth Form -->
-            <form id="auth-form">
-                <div class="input-group">
-                    <label for="email">Email Address</label>
-                    <input type="email" id="email" class="input-field" placeholder="you@example.com" required>
-                </div>
-
-                <div class="input-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" class="input-field" placeholder="••••••••" required>
-                </div>
-
-                <button type="submit" id="submit-btn" class="btn btn-primary" style="width: 100%;">Sign In</button>
-            </form>
-
-            <div style="margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
-                <!-- Toggle Mode -->
-                <p class="text-muted" style="font-size: 0.9rem;">
-                    <span id="toggle-text">Don't have an account?</span> 
-                    <button id="toggle-mode-btn" class="text-primary" style="background:none; border:none; padding:0; font-weight:600;">Sign Up</button>
-                </p>
-                <p id="error-msg" style="color: var(--error); font-size: 0.9rem; margin-top: 1rem; display: none;"></p>
-                <p id="success-msg" style="color: var(--success); font-size: 0.9rem; margin-top: 1rem; display: none;"></p>
+            <div class="flex items-center gap-4">
+                <a href="auth.html" class="btn btn-ghost">Log In</a>
+                <a href="auth.html" class="btn btn-primary">Get Started Free</a>
             </div>
         </div>
-    </div>
+    </nav>
 
-    <!-- Scripts -->
-    <script src="js/supabase.js"></script>
-    <script src="js/auth.js"></script>
+    <!-- HERO -->
+    <section class="hero container">
+        <div class="animate-fade-in">
+            <h1>Grow your audience<br>on social media</h1>
+            <p>PostOnce helps you schedule posts for Facebook, LinkedIn, Instagram, and X. Simple, powerful, and free to start.</p>
+            <div class="flex justify-center gap-4">
+                <a href="auth.html" class="btn btn-primary" style="padding: 16px 32px; font-size: 1.1rem;">Start Simply For Free</a>
+                <a href="#features" class="btn btn-ghost" style="border:1px solid var(--border)">See How It Works</a>
+            </div>
+            
+            <!-- Dashboard Mockup Image Placeholder -->
+            <div style="margin-top: 4rem; position: relative;">
+                <div style="background: var(--surface-glass); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 1rem; box-shadow: 0 0 50px rgba(79, 70, 229, 0.1);">
+                    <img src="https://placehold.co/1000x500/1e293b/FFF?text=Dashboard+Preview" alt="Dashboard" style="width:100%; border-radius: 8px; opacity: 0.8;">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section id="features" class="features">
+        <div class="container">
+            <div class="text-center">
+                <h2 class="text-2xl">Everything you need to go viral</h2>
+                <p class="text-muted" style="margin-top:10px;">Without the complexity of enterprise tools.</p>
+            </div>
+            
+            <div class="feature-grid">
+                <!-- Feature 1 -->
+                <div class="feature-item">
+                    <div class="feature-icon"><i data-feather="calendar"></i></div>
+                    <h3 class="text-xl">Visual Calendar</h3>
+                    <p class="text-muted" style="margin-top:10px;">See all your posts in a monthly or weekly view. Drag and drop to reschedule instantly.</p>
+                </div>
+                <!-- Feature 2 -->
+                <div class="feature-item">
+                    <div class="feature-icon"><i data-feather="send"></i></div>
+                    <h3 class="text-xl">Multi-Channel Publishing</h3>
+                    <p class="text-muted" style="margin-top:10px;">Write once, post everywhere. Customize text for each platform seamlessly.</p>
+                </div>
+                <!-- Feature 3 -->
+                <div class="feature-item">
+                    <div class="feature-icon"><i data-feather="bar-chart-2"></i></div>
+                    <h3 class="text-xl">Simple Analytics</h3>
+                    <p class="text-muted" style="margin-top:10px;">Know what's working. Track likes, clicks, and engagement growth over time.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section">
+        <div class="container">
+            <h2 class="text-2xl" style="font-size: 2.5rem; margin-bottom: 1.5rem;">Ready to save time?</h2>
+            <p class="text-muted" style="margin-bottom: 2rem;">Join thousands of creators who trust PostOnce.</p>
+            <a href="auth.html" class="btn btn-primary" style="padding: 16px 40px; font-size: 1.1rem;">Get Started Now</a>
+            <p class="text-muted" style="margin-top: 1rem; font-size: 0.9rem;">No credit card required</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer style="padding: 2rem 0; border-top: 1px solid var(--border); text-align: center; color: var(--text-muted);">
+        <p>&copy; 2024 PostOnce. All rights reserved.</p>
+    </footer>
+
+    <script>
+        feather.replace();
+    </script>
 </body>
 </html>

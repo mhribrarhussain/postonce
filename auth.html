@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PostOnce - Social Media Scheduler</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Supabase SDK (CDN) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+    <!-- Landing / Auth Wrapper -->
+    <div class="auth-wrapper">
+        <div class="auth-box glass-card text-center animate-fade-in">
+            <!-- Logo area -->
+            <div class="flex justify-center items-center gap-2" style="margin-bottom: 2rem;">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                </svg>
+                <h1 class="text-xl">PostOnce</h1>
+            </div>
+
+            <!-- Dynamic Header -->
+            <h2 id="page-title" class="text-2xl text-gradient" style="margin-bottom: 0.5rem;">Welcome Back</h2>
+            <p id="page-subtitle" class="text-muted" style="margin-bottom: 2rem;">Manage all your social posts in one place.</p>
+
+            <!-- Auth Form -->
+            <form id="auth-form">
+                <div class="input-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" class="input-field" placeholder="you@example.com" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" class="input-field" placeholder="••••••••" required>
+                </div>
+
+                <button type="submit" id="submit-btn" class="btn btn-primary" style="width: 100%;">Sign In</button>
+            </form>
+
+            <div style="margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
+                <!-- Toggle Mode -->
+                <p class="text-muted" style="font-size: 0.9rem;">
+                    <span id="toggle-text">Don't have an account?</span> 
+                    <button id="toggle-mode-btn" class="text-primary" style="background:none; border:none; padding:0; font-weight:600;">Sign Up</button>
+                </p>
+                <p id="error-msg" style="color: var(--error); font-size: 0.9rem; margin-top: 1rem; display: none;"></p>
+                <p id="success-msg" style="color: var(--success); font-size: 0.9rem; margin-top: 1rem; display: none;"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/supabase.js"></script>
+    <script src="js/auth.js"></script>
+</body>
+</html>
