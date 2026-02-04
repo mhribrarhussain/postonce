@@ -1,16 +1,19 @@
 :root {
-    /* Color Palette - Premium SaaS Blue/Indigo Theme */
-    --primary: #4F46E5; /* Indigo 600 */
-    --primary-hover: #4338ca;
-    --secondary: #ec4899; /* Pink 500 for accents */
-    --background: #0f172a; /* Slate 900 - Dark Mode Default */
-    --surface: #1e293b; /* Slate 800 */
-    --surface-glass: rgba(30, 41, 59, 0.7);
-    --text-main: #f8fafc;
-    --text-muted: #94a3b8;
-    --border: #334155;
-    --success: #10b981;
-    --error: #ef4444;
+    /* Color Palette - Clean Light SaaS Theme */
+    --primary: #2563eb; /* Blue 600 - The requested "Medium Blue" */
+    --primary-hover: #1d4ed8; /* Blue 700 */
+    --secondary: #475569; /* Slate 600 */
+    
+    --background: #ffffff; /* White - Dominant Background */
+    --surface: #f1f5f9; /* Slate 100 - Secondary Background */
+    --card-bg: #ffffff;
+    
+    --text-main: #0f172a; /* Slate 900 - Dark Gray/Black for text */
+    --text-muted: #64748b; /* Slate 500 */
+    
+    --border: #e2e8f0; /* Slate 200 */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
     
     /* Spacing & Radius */
     --radius-sm: 6px;
@@ -26,6 +29,7 @@ body {
     color: var(--text-main);
     line-height: 1.6;
     overflow-x: hidden;
+    font-size: 16px;
 }
 
 a { text-decoration: none; color: inherit; transition: 0.2s; }
@@ -49,13 +53,9 @@ button { cursor: pointer; border: none; font-family: inherit; }
 .text-center { text-align: center; }
 .text-primary { color: var(--primary); }
 .text-lg { font-size: 1.125rem; }
-.text-xl { font-size: 1.25rem; font-weight: 600; }
-.text-2xl { font-size: 2rem; font-weight: 700; letter-spacing: -0.025em; }
-.text-gradient {
-    background: linear-gradient(135deg, #818cf8 0%, #c084fc 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
+.text-xl { font-size: 1.25rem; font-weight: 600; color: var(--text-main); }
+.text-2xl { font-size: 2rem; font-weight: 700; letter-spacing: -0.025em; color: var(--text-main); }
+.text-muted { color: var(--text-muted); }
 
 /* Premium Button Styles */
 .btn {
@@ -66,50 +66,40 @@ button { cursor: pointer; border: none; font-family: inherit; }
     border-radius: var(--radius-sm);
     font-weight: 500;
     transition: all 0.2s ease;
+    font-size: 0.95rem;
 }
 
 .btn-primary {
     background-color: var(--primary);
     color: white;
-    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);
+    box-shadow: var(--shadow-sm);
 }
 
 .btn-primary:hover {
     background-color: var(--primary-hover);
     transform: translateY(-1px);
-    box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.4);
+    box-shadow: var(--shadow-md);
 }
 
 .btn-ghost {
     background: transparent;
     color: var(--text-muted);
 }
-.btn-ghost:hover { color: var(--text-main); background: rgba(255,255,255,0.05); }
+.btn-ghost:hover { 
+    color: var(--primary); 
+    background: var(--surface); 
+}
 
-/* Glass Card */
+/* Clean Card - Replaces Glass Card */
 .glass-card {
-    background: var(--surface-glass);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: var(--card-bg);
+    border: 1px solid var(--border);
     border-radius: var(--radius-md);
     padding: 2rem;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    box-shadow: var(--shadow-sm);
 }
 
-/* Auth Pages */
-.auth-wrapper {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: radial-gradient(circle at top right, #1e1b4b 0%, var(--background) 40%);
-}
-
-.auth-box {
-    width: 100%;
-    max-width: 400px;
-}
-
+/* Inputs */
 .input-group {
     margin-bottom: 1rem;
     text-align: left;
@@ -118,15 +108,16 @@ button { cursor: pointer; border: none; font-family: inherit; }
 .input-group label {
     display: block;
     font-size: 0.875rem;
-    color: var(--text-muted);
+    font-weight: 500;
+    color: var(--text-main);
     margin-bottom: 0.5rem;
 }
 
 .input-field {
     width: 100%;
-    background: rgba(0, 0, 0, 0.2);
+    background: #ffffff;
     border: 1px solid var(--border);
-    color: white;
+    color: var(--text-main);
     padding: 10px 14px;
     border-radius: var(--radius-sm);
     font-size: 1rem;
@@ -136,7 +127,83 @@ button { cursor: pointer; border: none; font-family: inherit; }
 .input-field:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.input-field::placeholder {
+    color: #94a3b8;
+}
+
+/* Auth Pages */
+.auth-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--surface); /* Light gray bg for auth */
+}
+
+.auth-box {
+    width: 100%;
+    max-width: 400px;
+    background: white;
+    padding: 2.5rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border);
+}
+
+/* Platform Selection Icons */
+.platform-checkbox {
+    display: none; 
+}
+
+.platform-select-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.platform-select-label:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: var(--surface);
+}
+
+.platform-checkbox:checked + .platform-select-label {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);
+}
+
+/* Checkmark Badge */
+.platform-checkbox:checked + .platform-select-label::after {
+    content: "✓";
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: white;
+    color: var(--primary);
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    border: 2px solid var(--primary);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 /* Animations */
@@ -146,56 +213,48 @@ button { cursor: pointer; border: none; font-family: inherit; }
 }
 
 .animate-fade-in {
-    animation: fadeIn 0.6s ease-out forwards;
+    animation: fadeIn 0.4s ease-out forwards;
 }
 
-/* Platform Selection Icons */
-.platform-checkbox {
-    display: none; /* Hide default checkbox */
-}
+/* =========================================
+   RESPONSIVENESS 
+   ========================================= */
 
-.platform-select-label {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 48px;
-    height: 48px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px; /* Square with rounded corners */
-    color: var(--text-muted);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    position: relative;
-}
+/* Tablet & Mobile */
+@media (max-width: 768px) {
+    body {
+        font-size: 15px; 
+    }
 
-.platform-select-label:hover {
-    border-color: var(--primary);
-    color: var(--text-main);
-}
+    .container {
+        padding: 0 16px;
+    }
 
-.platform-checkbox:checked + .platform-select-label {
-    background: var(--primary);
-    border-color: var(--primary);
-    color: white;
-    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.4);
-}
+    /* Auth Box */
+    .auth-box {
+        max-width: 100%;
+        margin: 1rem;
+        padding: 1.5rem;
+    }
 
-/* Optional Checkmark Badge */
-.platform-checkbox:checked + .platform-select-label::after {
-    content: "✓";
-    position: absolute;
-    top: -6px;
-    right: -6px;
-    background: white;
-    color: var(--primary);
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    font-size: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    border: 1px solid var(--primary);
+    /* Text Sizes */
+    .text-2xl { font-size: 1.75rem; }
+    .text-xl { font-size: 1.15rem; }
+
+    /* Buttons */
+    .btn {
+        width: 100%; /* Full width buttons on mobile */
+        padding: 12px;
+    }
+
+    /* Cards */
+    .glass-card {
+        padding: 1.5rem;
+    }
+
+    /* Inputs */
+    .input-field {
+        font-size: 16px; /* Prevent zoom on iOS */
+        padding: 12px;
+    }
 }
