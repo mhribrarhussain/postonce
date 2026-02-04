@@ -175,7 +175,7 @@ function loadPage(page) {
 // ==========================================
 // FACEBOOK INTEGRATION
 // ==========================================
-const FB_APP_ID = 'YOUR_APP_ID_HERE'; // <--- REPLACE THIS 
+const FB_APP_ID = '910021671498814'; // PostOnce App ID 
 
 // 1. Initialize SDK
 window.fbAsyncInit = function() {
