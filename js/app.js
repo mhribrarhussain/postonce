@@ -99,7 +99,7 @@ navItems.forEach(item => {
     });
 });
 
-function loadPage(page) {
+async function loadPage(page) {
     contentArea.innerHTML = ''; // Clear current content
 
     if (page === 'home') {
@@ -163,14 +163,29 @@ function loadPage(page) {
     } 
     else if (page === 'accounts') {
         pageHeader.innerText = 'Connected Accounts';
+        contentArea.innerHTML = '<p class="text-muted">Loading accounts...</p>';
+
+        // Fetch Accounts
+        const { data: accounts } = await supabaseClient.from('social_accounts').select('*');
+        const fbAccount = accounts ? accounts.find(a => a.platform === 'facebook') : null;
+
+        // Render Code
+        const fbButton = fbAccount 
+            ? `<button class="btn btn-outline-danger" style="width:100%; border-color: #ff4d4d; color:#ff4d4d;" onclick="disconnectAccount('${fbAccount.id}')">Disconnect</button>` 
+            : `<button class="btn btn-primary" style="width:100%" onclick="connectFacebook()">Connect</button>`;
+        
+        const fbStatus = fbAccount 
+            ? `<span style="color:#4ade80; font-size:0.8rem;">● Connected as ${fbAccount.account_name}</span>`
+            : `<p class="text-muted" style="margin-bottom: 1.5rem; font-size: 0.9rem;">Connect your business page</p>`;
+
         contentArea.innerHTML = `
             <div class="accounts-grid">
                 <!-- Facebook -->
                 <div class="account-card">
                     <div class="platform-icon facebook"><i data-feather="facebook"></i></div>
                     <h3 class="text-lg">Facebook Page</h3>
-                    <p class="text-muted" style="margin-bottom: 1.5rem; font-size: 0.9rem;">Connect your business page</p>
-                    <button class="btn btn-primary" style="width:100%">Connect</button>
+                    ${fbStatus}
+                    <div style="margin-top:1rem">${fbButton}</div>
                 </div>
                 <!-- LinkedIn -->
                 <div class="account-card">
@@ -196,7 +211,7 @@ function loadPage(page) {
             </div>
         `;
         feather.replace();
-        setTimeout(attachConnectListeners, 500);
+        // remove setTimeout(attachConnectListeners, 500); as we use inline onclick now
     } 
     else if (page === 'settings') {
         pageHeader.innerText = 'Settings';
@@ -304,14 +319,22 @@ async function saveAccountToSupabase(platform, accountId, name, token) {
 }
 
 // 5. Attach Listener
-function attachConnectListeners() {
-    // Find the Facebook "Connect" button
-    // It's in the first .account-card
-    const fbCard = document.querySelector('.account-card'); 
-    if(fbCard) {
-        const btn = fbCard.querySelector('.btn-primary');
-        if(btn) {
-            btn.onclick = connectFacebook; // direct attach
-        }
+// 6. Connect Logic (Global for onclick)
+window.connectFacebook = connectFacebook; 
+
+// 7. Disconnect Logic
+window.disconnectAccount = async function(id) {
+    if(!confirm("Are you sure you want to disconnect this account?")) return;
+
+    const { error } = await supabaseClient
+        .from('social_accounts')
+        .delete()
+        .eq('id', id);
+
+    if(error) {
+        alert("Error disconnecting: " + error.message);
+    } else {
+        alert("Account disconnected.");
+        loadPage('accounts'); // Refresh
     }
-}
+};
