@@ -17,6 +17,7 @@ async function init() {
         return;
     }
     userEmailEl.innerText = session.user.email;
+    loadPage('home'); // Default Load
 }
 init();
 
@@ -44,24 +45,128 @@ navItems.forEach(item => {
         // Remove active class
         navItems.forEach(nav => nav.classList.remove('active'));
         // Add to clicked
-        item.classList.add('active'); // Note: dealing with icon click propagation might need care
+        item.classList.add('active'); 
         const page = item.getAttribute('data-page');
         loadPage(page);
     });
 });
 
 function loadPage(page) {
-    // This is where you would fetch data or swap innerHTML
+    contentArea.innerHTML = ''; // Clear current content
+
     if (page === 'home') {
         pageHeader.innerText = 'Overview';
-        // Show stats grid...
-    } else if (page === 'calendar') {
+        contentArea.innerHTML = `
+            <div class="stats-grid">
+                <div class="stat-card glass-card">
+                    <p class="text-muted">Scheduled</p>
+                    <h3 class="text-2xl">0</h3>
+                </div>
+                <div class="stat-card glass-card">
+                    <p class="text-muted">Published</p>
+                    <h3 class="text-2xl">0</h3>
+                </div>
+                <div class="stat-card glass-card">
+                    <p class="text-muted">Connected</p>
+                    <h3 class="text-2xl">0</h3>
+                </div>
+            </div>
+            <div class="mt-4 glass-card" style="margin-top: 2rem;">
+                <h3 class="text-lg" style="margin-bottom: 1rem;">Recent Activity</h3>
+                <p class="text-muted">No posts found.</p>
+            </div>
+        `;
+        feather.replace();
+    } 
+    else if (page === 'calendar') {
         pageHeader.innerText = 'Calendar';
-        // contentArea.innerHTML = 'Calendar View Coming Soon...';
-    } else if (page === 'accounts') {
+        let daysHtml = '';
+        for(let i=1; i<=31; i++) {
+            daysHtml += `
+                <div class="calendar-day">
+                    <span style="font-size:0.8rem; color:var(--text-muted);">${i}</span>
+                    ${i === 15 ? '<div class="post-pill">🚀 Launch Post</div>' : ''}
+                </div>
+            `;
+        }
+
+        contentArea.innerHTML = `
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <h3 class="text-xl">October 2023</h3>
+                    <div class="flex gap-2">
+                        <button class="btn btn-ghost"><i data-feather="chevron-left"></i></button>
+                        <button class="btn btn-ghost"><i data-feather="chevron-right"></i></button>
+                    </div>
+                </div>
+                <div class="calendar-grid">
+                    <div class="calendar-day-header">Sun</div>
+                    <div class="calendar-day-header">Mon</div>
+                    <div class="calendar-day-header">Tue</div>
+                    <div class="calendar-day-header">Wed</div>
+                    <div class="calendar-day-header">Thu</div>
+                    <div class="calendar-day-header">Fri</div>
+                    <div class="calendar-day-header">Sat</div>
+                    ${daysHtml}
+                </div>
+            </div>
+        `;
+        feather.replace();
+    } 
+    else if (page === 'accounts') {
         pageHeader.innerText = 'Connected Accounts';
-        // contentArea.innerHTML = 'Account List...';
-    } else if (page === 'settings') {
+        contentArea.innerHTML = `
+            <div class="accounts-grid">
+                <!-- Facebook -->
+                <div class="account-card">
+                    <div class="platform-icon facebook"><i data-feather="facebook"></i></div>
+                    <h3 class="text-lg">Facebook Page</h3>
+                    <p class="text-muted" style="margin-bottom: 1.5rem; font-size: 0.9rem;">Connect your business page</p>
+                    <button class="btn btn-primary" style="width:100%">Connect</button>
+                </div>
+                <!-- LinkedIn -->
+                <div class="account-card">
+                    <div class="platform-icon linkedin"><i data-feather="linkedin"></i></div>
+                    <h3 class="text-lg">LinkedIn</h3>
+                    <p class="text-muted" style="margin-bottom: 1.5rem; font-size: 0.9rem;">Connect personal or company</p>
+                    <button class="btn btn-primary" style="width:100%">Connect</button>
+                </div>
+                <!-- Instagram -->
+                <div class="account-card">
+                    <div class="platform-icon instagram"><i data-feather="instagram"></i></div>
+                    <h3 class="text-lg">Instagram</h3>
+                    <p class="text-muted" style="margin-bottom: 1.5rem; font-size: 0.9rem;">Business accounts only</p>
+                    <button class="btn btn-ghost" style="width:100%; border:1px solid var(--border)">Coming Soon</button>
+                </div>
+                 <!-- Twitter -->
+                <div class="account-card">
+                    <div class="platform-icon twitter"><i data-feather="twitter"></i></div>
+                    <h3 class="text-lg">X (Twitter)</h3>
+                    <p class="text-muted" style="margin-bottom: 1.5rem; font-size: 0.9rem;">Post tweets & threads</p>
+                    <button class="btn btn-ghost" style="width:100%; border:1px solid var(--border)">Coming Soon</button>
+                </div>
+            </div>
+        `;
+        feather.replace();
+    } 
+    else if (page === 'settings') {
         pageHeader.innerText = 'Settings';
+        contentArea.innerHTML = `
+            <div class="glass-card" style="max-width:600px">
+                <h3 class="text-lg" style="margin-bottom:1rem">Account Preferences</h3>
+                <div class="input-group">
+                    <label>Full Name</label>
+                    <input type="text" class="input-field" value="User">
+                </div>
+                 <div class="input-group">
+                    <label>Timezone</label>
+                    <select class="input-field" style="background:var(--surface)">
+                        <option>UTC (GMT+0)</option>
+                        <option>EST (GMT-5)</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary">Save Changes</button>
+            </div>
+        `;
     }
 }

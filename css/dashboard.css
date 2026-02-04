@@ -106,3 +106,99 @@
     max-width: 500px;
 }
 .modal-header { margin-bottom: 1.5rem; }
+
+/* Accounts Grid */
+.accounts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.account-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 2rem;
+    background: var(--surface-glass);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: var(--radius-md);
+    transition: 0.2s;
+}
+
+.account-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+}
+
+.platform-icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    color: white;
+}
+.platform-icon.facebook { background: #1877F2; }
+.platform-icon.linkedin { background: #0A66C2; }
+.platform-icon.instagram { background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%); }
+.platform-icon.twitter { background: #000; border: 1px solid #333; }
+
+/* Calendar */
+.calendar-container {
+    background: var(--surface-glass);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+}
+
+.calendar-day-header {
+    background: var(--surface);
+    padding: 10px;
+    text-align: center;
+    font-weight: 500;
+    color: var(--text-muted);
+}
+
+.calendar-day {
+    background: var(--background);
+    min-height: 100px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    transition: 0.2s;
+}
+.calendar-day:hover { background: var(--surface); }
+
+.post-pill {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+    background: rgba(79, 70, 229, 0.2);
+    color: #a5b4fc;
+    border-left: 2px solid var(--primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+}
