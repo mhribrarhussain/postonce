@@ -207,13 +207,23 @@ function connectFacebook() {
         if (response.authResponse) {
             console.log('Welcome! Fetching your information.... ');
             // Now get the Pages
-            FB.api('/me/accounts', function(pageResponse) {
+            // Now get the Pages with specific fields
+            FB.api('/me/accounts?fields=name,access_token,id', function(pageResponse) {
+                console.log("Page Response:", pageResponse); // For debugging
+                
+                // 1. Check for API Error
+                if (pageResponse.error) {
+                    alert("Facebook Permission Error: " + pageResponse.error.message + "\n\nPlease ensure you granted 'pages_show_list' permission.");
+                    return;
+                }
+
+                // 2. Check for Data
                 if(pageResponse.data && pageResponse.data.length > 0) {
                     // Save first page found (MVP)
                     const page = pageResponse.data[0]; 
                     saveAccountToSupabase('facebook', page.id, page.name, page.access_token);
                 } else {
-                    alert("No Facebook Pages found for this user.");
+                    alert("No Facebook Pages found. \n\n1. Do you have a Page? \n2. Did you select it in the popup? \n3. Did you add 'pages_show_list' to the App Dashboard?");
                 }
             });
         } else {
