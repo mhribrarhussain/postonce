@@ -51,13 +51,16 @@ composeBtn.addEventListener('click', async () => { /* ... existing fetch logic .
     platformChecklist.innerHTML = '';
     accounts.forEach(acc => {
         const id = `chk-${acc.id}`;
-        platformChecklist.insertAdjacentHTML('beforeend', `
-            <div class="flex items-center gap-1 bg-white p-1 rounded border">
+        // Compact Icon Design
+        const html = `
+            <div class="relative" title="${acc.platform} - ${acc.account_name}">
                 <input type="checkbox" id="${id}" value="${acc.id}" checked class="platform-checkbox">
-                <label for="${id}" class="cursor-pointer select-none">
-                    <i data-feather="${acc.platform}" style="width:12px; height:12px"></i> ${acc.account_name}
+                <label for="${id}" class="platform-select-label">
+                    <i data-feather="${acc.platform}" style="width:24px; height:24px;"></i>
                 </label>
-            </div>`);
+            </div>
+        `;
+        platformChecklist.insertAdjacentHTML('beforeend', html);
     });
     feather.replace();
 });

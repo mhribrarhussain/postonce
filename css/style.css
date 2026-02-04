@@ -148,3 +148,54 @@ button { cursor: pointer; border: none; font-family: inherit; }
 .animate-fade-in {
     animation: fadeIn 0.6s ease-out forwards;
 }
+
+/* Platform Selection Icons */
+.platform-checkbox {
+    display: none; /* Hide default checkbox */
+}
+
+.platform-select-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px; /* Square with rounded corners */
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.platform-select-label:hover {
+    border-color: var(--primary);
+    color: var(--text-main);
+}
+
+.platform-checkbox:checked + .platform-select-label {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.4);
+}
+
+/* Optional Checkmark Badge */
+.platform-checkbox:checked + .platform-select-label::after {
+    content: "✓";
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: white;
+    color: var(--primary);
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    border: 1px solid var(--primary);
+}
